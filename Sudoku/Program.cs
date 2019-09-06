@@ -8,10 +8,14 @@ namespace Sudoku
         static void Main(string[] args)
         {
             var oldForegroundColor = Console.ForegroundColor;
-            Console.CancelKeyPress += (sender, e) =>
+
+            void RestoreConsole()
             {
                 Console.ForegroundColor = oldForegroundColor;
-            };
+                Console.CursorVisible = true;
+            }
+
+            Console.CancelKeyPress += (sender, e) => RestoreConsole();
 
             try
             {
@@ -24,7 +28,7 @@ namespace Sudoku
             }
             finally
             {
-                Console.ForegroundColor = oldForegroundColor;
+                RestoreConsole();
             }
         }
 
