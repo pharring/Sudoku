@@ -35,13 +35,16 @@ namespace Sudoku
         private readonly ushort[] _rowBits = new ushort[9];
         private readonly ushort[] _colBits = new ushort[9];
         private readonly ushort[] _blockBits = new ushort[9];
+        private readonly Action<int, byte> _paintCallback;
 
-        public Sudoku(string puzzle)
+        public Sudoku(string puzzle, Action<int, byte> paintCallback)
         {
             if (puzzle.Length != 81)
             {
                 throw new ArgumentException("puzzle must be exactly 81 chars");
             }
+
+            _paintCallback = paintCallback ?? throw new ArgumentNullException(nameof(paintCallback));
 
             for (int i = 0; i < 81; i++)
             {
@@ -111,54 +114,12 @@ namespace Sudoku
                 _colBits[position.Col] |= setMask;
                 _blockBits[position.Block] |= setMask;
             }
+
+            _paintCallback(position.Index, val);
         }
 
         private bool IsOccupied(int position) => _board[position] != 0;
 
         private int Available(in IndexRowColumnBlock position) => ~(_rowBits[position.Row] | _colBits[position.Col] | _blockBits[position.Block]);
-
-        public override string ToString()
-        {
-            var sb = new StringBuilder();
-            sb.AppendLine("╔═══╤═══╤═══╦═══╤═══╤═══╦═══╤═══╤═══╗");
-
-            for (int row = 0; row < 9; row++)
-            {
-                sb.Append("║ ");
-                for (int col = 0; col < 9; col++)
-                {
-                    var val = _board[row * 9  + col];
-                    sb.Append(val == 0 ? '.' : (char)(val + '0'));
-
-                    if (col == 2 || col == 5)
-                    {
-                        sb.Append(" ║ ");
-                    }
-                    else if (col == 8)
-                    {
-                        sb.AppendLine(" ║");
-                    }
-                    else
-                    {
-                        sb.Append(" │ ");
-                    }
-                }
-
-                if (row == 2 || row == 5)
-                {
-                    sb.AppendLine("╠═══╪═══╪═══╬═══╪═══╪═══╬═══╪═══╪═══╣");
-                }
-                else if (row == 8)
-                {
-                    sb.AppendLine("╚═══╧═══╧═══╩═══╧═══╧═══╩═══╧═══╧═══╝");
-                }
-                else
-                {
-                    sb.AppendLine("╟───┼───┼───╫───┼───┼───╫───┼───┼───╢");
-                }
-            }
-
-            return sb.ToString();
-        }
     }
 }
